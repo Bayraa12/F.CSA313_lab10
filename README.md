@@ -46,7 +46,7 @@ Compiler тохиргоог зассан. Эх код өөрчлөгдөөгүй
 
 Үр дүн: [Maven гаралт](results/mvn-verify-A.txt), [JaCoCo CSV](results/jacoco-A.csv). DU хамралтыг хүснэгтээр шалгасан.
 
-## B. bonus — all-defs
+## B. bonus
 
 ### Def/use жагсаалт
 
@@ -73,7 +73,7 @@ Compiler тохиргоог зассан. Эх код өөрчлөгдөөгүй
 56: c-use score
 ```
 
-### Хоёр тест
+### All-defs
 
 | ID | Метод | attendance | threshold | Хариу |
 |---|---|---|---:|---:|
@@ -86,24 +86,79 @@ WSL дээр нийт 5 тест тэнцсэн: gcd 3, bonus 2. Branch: 13/16 (
 
 Үр дүн: [Maven гаралт](results/mvn-verify-alldefs.txt), [JaCoCo CSV](results/jacoco-alldefs.csv).
 
-### All-defs-д ашигласан DU замууд
+### All-DU-pairs
 
-Def бүрээс нэг use-д хүрсэн замыг харуулав. Бүх DU хосын хүснэгтийг дараагийн шатанд гүйцээнэ. `32a/32b` нь 32-р мөрийн null/threshold шалгалт, `38p/38d` нь 38-р мөрийн нөхцөл/оноолт; `T/F` нь салаа.
+B01, B02 дээр дараах тестүүдийг нэмсэн.
 
-| Хувьсагч | Def мөр | Use мөр | Төрөл | Def-clear зам | Нотлох тест | Хамрагдсан |
+| ID | Метод | attendance | threshold | Хариу |
+|---|---|---|---:|---|
+| B03 | `bonus_emptyAtZeroThreshold_returns5` | `[]` | 0 | 5 |
+| B04 | `bonus_emptyBelowThreshold_returns0` | `[]` | 1 | 0 |
+| B05 | `bonus_allAbsent_returns0` | `[0,0]` | 1 | 0 |
+| B06 | `bonus_interruptedStreak_returns0` | `[1,0,1,1]` | 4 | 0 |
+| B07 | `bonus_longStreakAtThreshold_returns8` | `[1,1,1,1,1,1]` | 6 | 8 |
+| B08 | `bonus_nullAttendance_throws` | `null` | 1 | IllegalArgumentException |
+| B09 | `bonus_negativeThreshold_throws` | `[1]` | -1 | IllegalArgumentException |
+
+WSL дээр нийт 12 тест тэнцсэн: gcd 3, bonus 9. Branch: 16/16 (100%), Line: 23/24. Үлдсэн нэг мөр нь далд constructor.
+
+Үр дүн: [Maven гаралт](results/mvn-verify-alldu.txt), [JaCoCo CSV](results/jacoco-alldu.csv).
+
+### CFG
+
+38-р мөрийн нөхцөл, `a`-д утга оноох үйлдлийг салгаж зурсан. Ирмэг бүрд түүнийг дайрдаг тестийн методын нэр бий.
+
+![bonus CFG](cfg-bonus.png)
+
+### DU хүснэгт
+
+`32a/32b` нь 32-р мөрийн null/threshold шалгалт, `38p/38d` нь 38-р мөрийн нөхцөл/оноолт. `T/F` нь салаа. Биелэх боломжтой хос бүрд нэг нотлох тест, def-clear замыг бичсэн.
+
+| Хувьсагч | Def мөр | Use мөр | Төрөл | Def-clear зам | Тестийн ID | Хамрагдсан |
 |---|---:|---|---|---|---|---|
-| attendance | 31 | 32 (null) | p-use | 31 → 32a | B01 | Тийм |
-| threshold | 31 | 32 (threshold) | p-use | 31 → 32aF → 32b | B01 | Тийм |
+| attendance | 31 | 32a (F) | p-use | 31 → 32aF → 32bF | B01 | Тийм |
+| attendance | 31 | 32a (T) | p-use | 31 → 32aT → 33 | B08 | Тийм |
+| attendance | 31 | 38p (F) | p-use | 31 → 32aF → 32bF → 35 → 36 → 37 → 38pF → 49 | B03 | Тийм |
+| attendance | 31 | 38p (T) | p-use | 31 → 32aF → 32bF → 35 → 36 → 37 → 38pT → 38d | B01 | Тийм |
+| threshold | 31 | 32b (F) | p-use | 31 → 32aF → 32bF → 35 | B01 | Тийм |
+| threshold | 31 | 32b (T) | p-use | 31 → 32aF → 32bT → 33 | B09 | Тийм |
+| threshold | 31 | 50 (F) | p-use | 31 → 32aF → 32bF → 35 → 36 → 37 → 38pF → 49 → 50F → 53F | B04 | Тийм |
+| threshold | 31 | 50 (T) | p-use | 31 → 32aF → 32bF → 35 → 36 → 37 → 38pF → 49 → 50T → 51 | B03 | Тийм |
 | present | 35 | 40 | c-use | 35 → 36 → 37 → 38pT → 38d → 39T → 40 | B01 | Тийм |
-| present | 40 | 50 | p-use | 40 → 41 → 42T → 43 → 38pF → 49 → 50 | B02 | Тийм |
+| present | 35 | 50 (F) | p-use | 35 → 36 → 37 → 38pF → 49 → 50F → 53F | B04 | Тийм |
+| present | 35 | 50 (T) | p-use | 35 → 36 → 37 → 38pF → 49 → 50T → 51 | B03 | Тийм |
+| present | 40 | 40 | c-use | 40 → 41 → 42F → 38pT → 38d → 39T → 40 | B06 | Тийм |
+| present | 40 | 50 (F) | p-use | 40 → 41 → 42T → 43 → 38pF → 49 → 50F → 53F | B06 | Тийм |
+| present | 40 | 50 (T) | p-use | 40 → 41 → 42T → 43 → 38pF → 49 → 50T → 51 | B02 | Тийм |
 | streak | 36 | 41 | c-use | 36 → 37 → 38pT → 38d → 39T → 40 → 41 | B01 | Тийм |
-| streak | 41 | 42 | p-use | 41 → 42 | B01 | Тийм |
+| streak | 41 | 41 | c-use | 41 → 42F → 38pT → 38d → 39T → 40 → 41 | B06 | Тийм |
+| streak | 41 | 42 (F) | p-use | 41 → 42F → 38pT | B06 | Тийм |
+| streak | 41 | 42 (T) | p-use | 41 → 42T → 43 | B01 | Тийм |
+| streak | 41 | 43 | c-use | 41 → 42T → 43 | B01 | Тийм |
 | streak | 46 | 41 | c-use | 46 → 38pT → 38d → 39T → 40 → 41 | B02 | Тийм |
-| best | 37 | 42 | p-use | 37 → 38pT → 38d → 39T → 40 → 41 → 42 | B01 | Тийм |
-| best | 43 | 53 | p-use | 43 → 38pF → 49 → 50T → 51 → 53 | B02 | Тийм |
-| a | 38 | 39 | p-use | 38d → 39 | B01 | Тийм |
+| best | 37 | 42 (T) | p-use | 37 → 38pT → 38d → 39T → 40 → 41 → 42T → 43 | B01 | Тийм |
+| best | 37 | 53 (F) | p-use | 37 → 38pF → 49 → 50F → 53F → 56 | B04 | Тийм |
+| best | 43 | 42 (F) | p-use | 43 → 38pT → 38d → 39F → 46 → 38pT → 38d → 39T → 40 → 41 → 42F → 38pT | B06 | Тийм |
+| best | 43 | 42 (T) | p-use | 43 → 38pT → 38d → 39T → 40 → 41 → 42T → 43 | B01 | Тийм |
+| best | 43 | 53 (F) | p-use | 43 → 38pF → 49 → 50F → 53F → 56 | B06 | Тийм |
+| best | 43 | 53 (T) | p-use | 43 → 38pF → 49 → 50T → 51 → 53T → 54 | B07 | Тийм |
+| a | 38 | 39 (F) | p-use | 38d → 39F → 46 | B01 | Тийм |
+| a | 38 | 39 (T) | p-use | 38d → 39T → 40 | B01 | Тийм |
 | score | 49 | 54 | c-use | 49 → 50F → 53T → 54 | B01 | Тийм |
+| score | 49 | 56 | c-use | 49 → 50F → 53F → 56 | B04 | Тийм |
+| score | 51 | 54 | c-use | 51 → 53T → 54 | B07 | Тийм |
 | score | 51 | 56 | c-use | 51 → 53F → 56 | B02 | Тийм |
 | score | 54 | 56 | c-use | 54 → 56 | B01 | Тийм |
 
-46-р мөр нь `streak`-ийн 36, 41, эсвэл өмнөх 46-р мөрийн def-ийг дарна.
+Биелэшгүй хоёр салаа:
+
+- `best: 37 → 42F`: анхны ирсэн өдөр `streak = 1`, `best = 0` тул нөхцөл T болно. Дараа нь 43-р мөр best-ийн def-ийг солино.
+- `best: 37 → 53T`: 37-р мөрийн утга хэвээр бол `best = 0`, тиймээс `best >= 5` биелэхгүй.
+
+46-р мөр нь `streak`-ийн 36, 41, эсвэл өмнөх 46-р мөрийн def-ийг дарна. `streak: 36/46 → 42/43` хослолууд 41-р мөрийн шинэ def-ээр тасардаг тул DU хос биш.
+
+### Branch ба DU
+
+Gcd-ийн 3 тест, B01, B02, B06, B08, B09 гэсэн нийт 8 тестээр Branch 16/16 болсон ч `score: 51 → 54` хамрагдаагүй. 50, 53-р мөрийн T салаанууд өөр өөр тестэд ажилласан тул branch 100% нь бүх DU хос хамрагдсан гэсэн үг биш.
+
+Нотолгоо: [Maven гаралт](results/mvn-verify-branch-only.txt), [JaCoCo CSV](results/jacoco-branch-only.csv).
