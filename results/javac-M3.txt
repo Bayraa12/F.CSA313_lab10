@@ -1,0 +1,2 @@
+javac 21.0.12.1
+Command: javac --release 17 -Xlint:all -d "/mnt/c/Users/Dell/.codex/visualizations/2026/11/15/01a1de76-e9a2-7441-805b-fbbefc309d77/lab10-c-work/javac-m3" "src/main/java/mn/edu/must/sqat/DataFlowTargets.java"

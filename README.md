@@ -162,3 +162,26 @@ WSL дээр нийт 12 тест тэнцсэн: gcd 3, bonus 9. Branch: 16/16 
 Gcd-ийн 3 тест, B01, B02, B06, B08, B09 гэсэн нийт 8 тестээр Branch 16/16 болсон ч `score: 51 → 54` хамрагдаагүй. 50, 53-р мөрийн T салаанууд өөр өөр тестэд ажилласан тул branch 100% нь бүх DU хос хамрагдсан гэсэн үг биш.
 
 Нотолгоо: [Maven гаралт](results/mvn-verify-branch-only.txt), [JaCoCo CSV](results/jacoco-branch-only.csv).
+
+## C. Мутацийн туршилт
+
+Мутаци бүрийн дараа `git restore`-оор кодоо буцаасан. M1-д streak-ийн шинэчлэлтийг устгасан, M2-д if дотор `best = present` болгосон. M3-д давталтын дараа `int total = present + best;` нэмсэн.
+
+| Мутаци | Үр дүн | Унасан тест | Алдааны мөр | Гаралт |
+|---|---|---|---|---|
+| M1 | 12 тестээс 2 унав | `bonus_belowThresholdWithLongStreak_returns3`<br>`bonus_longStreakAtThreshold_returns8` | `expected: <3> but was: <0>`<br>`expected: <8> but was: <5>` | [M1](results/mvn-test-M1.txt) |
+| M2 | 12 тест тэнцсэн | Байхгүй | Байхгүй | [M2](results/mvn-test-M2.txt) |
+| M2 + C01 | 13 тестээс 1 унав | `bonus_splitAttendanceWithShortStreak_returns5` | `expected: <5> but was: <8>` | [M2-kill](results/mvn-test-M2-kill.txt) |
+| M3 | 13 тест тэнцсэн | Байхгүй | Байхгүй | [M3](results/mvn-test-M3.txt) |
+
+M2 дээр өмнөх тестүүдэд present, streak ижил байсан эсвэл ялгаа нь 5-ын босгод нөлөөлөөгүй. Жишээ нь B06-д best 2-ын оронд 3 болсон ч оноо 0 хэвээр. C01-ийн `[1,1,0,1,1,1]`, threshold 5 үед present 5, хамгийн урт цуваа 3 байна. M2 best-ийг 5 болгож, 5-ын оронд 8 оноо буцаасан.
+
+M3-ийн total дараа нь хэрэглэгдэхгүй тул гаралт өөрчлөгдөхгүй. [javac -Xlint:all](results/javac-M3.txt) анхааруулга өгөөгүй. WSL дээр [Eclipse JDT](https://help.eclipse.org/latest/topic/org.eclipse.jdt.doc.user/tasks/task-using_batch_compiler.htm)-ийн `unusedLocal` шалгалтаар дараах [анхааруулга](results/static-analysis-M3.txt) гарсан:
+
+```text
+The value of the local variable total is not used
+```
+
+Кодоо сэргээсний дараа `mvn clean verify` ажиллуулсан. Нийт 13 тест тэнцсэн, Branch 16/16, Line 23/24. Эх код Starter-тэй ижил.
+
+Эцсийн үр дүн: [Maven гаралт](results/mvn-verify-final.txt), [JaCoCo CSV](results/jacoco-final.csv).

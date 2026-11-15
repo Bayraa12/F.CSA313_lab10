@@ -62,4 +62,10 @@ class BonusTest {
         assertThrows(IllegalArgumentException.class,
                 () -> DataFlowTargets.bonus(new int[]{1}, -1));
     }
+
+    @Test
+    @DisplayName("C01 M2: separated runs keep best below 5")
+    void bonus_splitAttendanceWithShortStreak_returns5() {
+        assertEquals(5, DataFlowTargets.bonus(new int[]{1, 1, 0, 1, 1, 1}, 5));
+    }
 }
