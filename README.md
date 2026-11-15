@@ -2,6 +2,35 @@
 
 С. Энхбаяр / B232270153 / F.CSA313
 
+## Орчин
+
+WSL Ubuntu дээр ажилласан.
+
+```text
+$ java -version
+openjdk version "21.0.12.1" 2026-08-18
+OpenJDK Runtime Environment (build 21.0.12.1+1-1-24.04.4-Ubuntu)
+OpenJDK 64-Bit Server VM (build 21.0.12.1+1-1-24.04.4-Ubuntu, mixed mode, sharing)
+
+$ mvn -version
+Apache Maven 3.8.7
+Maven home: /usr/share/maven
+Java version: 21.0.12.1, vendor: Ubuntu, runtime: /usr/lib/jvm/java-21-openjdk-amd64
+Default locale: en, platform encoding: UTF-8
+OS name: "linux", version: "6.6.87.2-microsoft-standard-wsl2", arch: "amd64", family: "unix"
+```
+
+Ажиллуулах: `mvn verify`. HTML тайлан: `target/site/jacoco/index.html`.
+
+## Үр дүн
+
+| Шат | Тест | Branch | Line | Нотолгоо |
+|---|---:|---:|---:|---|
+| A | 3 | 2/16 | 5/24 | [Гаралт](results/mvn-verify-A.txt), [CSV](results/jacoco-A.csv) |
+| B all-defs | 5 | 13/16 | 22/24 | [Гаралт](results/mvn-verify-alldefs.txt), [CSV](results/jacoco-alldefs.csv) |
+| B all-DU-pairs | 12 | 16/16 | 23/24 | [Гаралт](results/mvn-verify-alldu.txt), [CSV](results/jacoco-alldu.csv) |
+| C эцсийн | 13 | 16/16 | 23/24 | [Гаралт](results/mvn-verify-final.txt), [CSV](results/jacoco-final.csv) |
+
 ## A. gcd-ийн DU хосууд
 
 Мөрийн дугаар нь `DataFlowTargets.java` файлтай таарна. `13`-т `x`, `y` параметрүүд утгатай орж ирнэ. `14`-ийн `int tmp;` нь утга оноогоогүй зарлалт тул def гэж тооцоогүй.
@@ -33,18 +62,6 @@
 | G03 | `gcd_zeroFirst_returnsSecond` | `(0, 5)` | 5 |
 
 G01 давталтгүй замыг, G02 хоёр удаа давтаж үлдсэн DU хосуудыг шалгасан. G03 эхний оролт тэг байх тохиолдлыг шалгана.
-
-### Ажиллуулах
-
-```bash
-mvn clean verify
-```
-
-Compiler тохиргоог зассан. Эх код өөрчлөгдөөгүй.
-
-А шатанд WSL дээр 3 тест тэнцсэн. Нийт классын Branch: 2/16, Line: 5/24.
-
-Үр дүн: [Maven гаралт](results/mvn-verify-A.txt), [JaCoCo CSV](results/jacoco-A.csv). DU хамралтыг хүснэгтээр шалгасан.
 
 ## B. bonus
 
@@ -82,9 +99,7 @@ Compiler тохиргоог зассан. Эх код өөрчлөгдөөгүй
 
 B01 нь `score: 49 → 54 → 56`, B02 нь `score: 51 → 56` замыг шалгасан. Нэг тестээр хангахгүй: 51-р мөр ажиллавал 49-ийн утгыг хэрэглэхээс өмнө дарна. B02-т тасалсны дараа ирсэн тул 46-р мөрийн `streak = 0` утга 41-д хэрэглэгдэнэ.
 
-WSL дээр нийт 5 тест тэнцсэн: gcd 3, bonus 2. Branch: 13/16 (81.25%), Line: 22/24. All-defs хангагдсан ч null, сөрөг threshold, `streak > best`-ийн F салаа хамрагдаагүй.
-
-Үр дүн: [Maven гаралт](results/mvn-verify-alldefs.txt), [JaCoCo CSV](results/jacoco-alldefs.csv).
+All-defs хангагдсан ч null, сөрөг threshold, `streak > best`-ийн F салаа хамрагдаагүй.
 
 ### All-DU-pairs
 
@@ -100,9 +115,7 @@ B01, B02 дээр дараах тестүүдийг нэмсэн.
 | B08 | `bonus_nullAttendance_throws` | `null` | 1 | IllegalArgumentException |
 | B09 | `bonus_negativeThreshold_throws` | `[1]` | -1 | IllegalArgumentException |
 
-WSL дээр нийт 12 тест тэнцсэн: gcd 3, bonus 9. Branch: 16/16 (100%), Line: 23/24. Үлдсэн нэг мөр нь далд constructor.
-
-Үр дүн: [Maven гаралт](results/mvn-verify-alldu.txt), [JaCoCo CSV](results/jacoco-alldu.csv).
+Хамрагдаагүй ганц мөр нь далд constructor. Түүнийг хамруулах нэмэлт тест бичээгүй.
 
 ### CFG
 
@@ -174,7 +187,7 @@ Gcd-ийн 3 тест, B01, B02, B06, B08, B09 гэсэн нийт 8 тестэ�
 | M2 + C01 | 13 тестээс 1 унав | `bonus_splitAttendanceWithShortStreak_returns5` | `expected: <5> but was: <8>` | [M2-kill](results/mvn-test-M2-kill.txt) |
 | M3 | 13 тест тэнцсэн | Байхгүй | Байхгүй | [M3](results/mvn-test-M3.txt) |
 
-M2 дээр өмнөх тестүүдэд present, streak ижил байсан эсвэл ялгаа нь 5-ын босгод нөлөөлөөгүй. Жишээ нь B06-д best 2-ын оронд 3 болсон ч оноо 0 хэвээр. C01-ийн `[1,1,0,1,1,1]`, threshold 5 үед present 5, хамгийн урт цуваа 3 байна. M2 best-ийг 5 болгож, 5-ын оронд 8 оноо буцаасан.
+Өмнөх тестүүдэд present, streak-ийн ялгаа 5-ын босгод нөлөөлөөгүй; B06-д best 2-ын оронд 3 болсон ч оноо 0 хэвээр. C01-ийн `[1,1,0,1,1,1]`, threshold 5 үед present 5, best 3 байх ёстой ч M2 best-ийг 5 болгож, 8 оноо буцаасан.
 
 M3-ийн total дараа нь хэрэглэгдэхгүй тул гаралт өөрчлөгдөхгүй. [javac -Xlint:all](results/javac-M3.txt) анхааруулга өгөөгүй. WSL дээр [Eclipse JDT](https://help.eclipse.org/latest/topic/org.eclipse.jdt.doc.user/tasks/task-using_batch_compiler.htm)-ийн `unusedLocal` шалгалтаар дараах [анхааруулга](results/static-analysis-M3.txt) гарсан:
 
@@ -182,6 +195,8 @@ M3-ийн total дараа нь хэрэглэгдэхгүй тул гаралт
 The value of the local variable total is not used
 ```
 
-Кодоо сэргээсний дараа `mvn clean verify` ажиллуулсан. Нийт 13 тест тэнцсэн, Branch 16/16, Line 23/24. Эх код Starter-тэй ижил.
+Кодоо сэргээж, `mvn clean verify` ажиллуулсан. Эцсийн эх код Starter-тэй ижил.
 
-Эцсийн үр дүн: [Maven гаралт](results/mvn-verify-final.txt), [JaCoCo CSV](results/jacoco-final.csv).
+## Дүгнэлт
+
+DU хүснэгтээр def-ээс use хүртэлх замыг шалгасан. Branch 100% байсан ч `score: 51 → 54` хос хамрагдаагүй жишээ гарсан. Бүх DU хос хамрагдсан ч M2 амьд үлдсэн тул оролтын утга мөн чухал байна. Тасарсан ирцтэй C01 тест M2-ийг барьсан. M3 гаралтад нөлөөгүй учраас статик шалгалтаар илэрсэн. DU анализ нь зам, kill-ийг нэг бүрчлэн тулгадаг тул branch-ийн хувийг харахаас илүү ажиллагаатай. Хамгийн их цаг M3-ийн статик шалгалтын орчныг тохируулахад орсон.
